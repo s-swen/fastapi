@@ -1,5 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
+from datetime import date
 
 
 class GenreURLChoices(Enum):
@@ -8,7 +9,17 @@ class GenreURLChoices(Enum):
     METAL = 'metal'
     HIP_HOP = 'hip-hop'
 
-class Band(BaseModel):
-    id: int
+class Album(BaseModel):
+    title: str
+    release_date: date
+
+class BandBase(BaseModel):
     name: str
     genre: str
+    albums: list[Album] = []
+
+class BandCreate(BandBase):
+    pass
+
+class BandWithID(BandBase):
+    id: int
