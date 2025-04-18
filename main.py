@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path, Query
+from typing import Annotated
 from schemas import GenreURLChoices, BandCreate, BandWithID
 
 
@@ -17,21 +18,21 @@ BANDS = [
 @app.get('/bands')
 async def bands(
     genre: GenreURLChoices | None = None,
-    has_albums: bool = False
+    q: Annotated[str | None, Query(max_length=10)] = None
 ) -> list[BandWithID]:
     band_list = [BandWithID(**band) for band in BANDS]
     if genre:
         return [
             band for band in band_list if band.genre.value.lower() == genre.value
         ]
-    if has_albums:
+    if q:
         return [
-            band for band in band_list if band.albums
+            band for band in band_list if q.lower() in band.name.lower()
         ]
     return band_list
 
 @app.get('/bands/{band_id}')
-async def band(band_id: int) -> BandWithID:
+async def band(band_id: Annotated[int, Path(title='The Band ID')]) -> BandWithID:
     band = next((BandWithID(**band) for band in BANDS if band['id'] == band_id), None)
     if not band:
         raise HTTPException(status_code=404, detail="band not found")
